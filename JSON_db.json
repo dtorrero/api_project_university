@@ -1,0 +1,309 @@
+                    [
+  {
+    "schemaType": "Collection",
+    "name": "courses",
+    "defaultValue": "",
+    "description": "",
+    "fields": [
+      {
+        "schemaType": "Field",
+        "name": "_id",
+        "type": "ObjectId",
+        "required": true,
+        "unique": true,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "id",
+        "type": "Integer",
+        "required": true,
+        "unique": true,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "name",
+        "type": "String",
+        "required": false,
+        "unique": false,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "subjects",
+        "type": "Array",
+        "required": false,
+        "unique": false,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      }
+    ]
+  },
+  {
+    "schemaType": "Collection",
+    "name": "subjects",
+    "defaultValue": "",
+    "description": "",
+    "fields": [
+      {
+        "schemaType": "Field",
+        "name": "_id",
+        "type": "ObjectId",
+        "required": true,
+        "unique": true,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "id",
+        "type": "Integer",
+        "required": false,
+        "unique": false,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "name",
+        "type": "String",
+        "required": false,
+        "unique": true,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "description",
+        "type": "String",
+        "required": false,
+        "unique": false,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      }
+    ]
+  },
+  {
+    "schemaType": "Collection",
+    "name": "documents",
+    "defaultValue": "",
+    "description": "",
+    "fields": [
+      {
+        "schemaType": "Field",
+        "name": "_id",
+        "type": "ObjectId",
+        "required": true,
+        "unique": true,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "id",
+        "type": "Integer",
+        "required": false,
+        "unique": false,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "title",
+        "type": "String",
+        "required": false,
+        "unique": false,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "upload_date",
+        "type": "Date",
+        "required": false,
+        "unique": false,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "file_url",
+        "type": "String",
+        "required": false,
+        "unique": false,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "type",
+        "type": "String",
+        "required": false,
+        "unique": false,
+        "defaultValue": "",
+        "description": "TFM, Exam, certificado de notas, lecciones, etc...",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "grade",
+        "type": "Integer",
+        "required": false,
+        "unique": false,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "teacher_id",
+        "type": "Integer",
+        "required": false,
+        "unique": false,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "subject_id",
+        "type": "Integer",
+        "required": false,
+        "unique": false,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "owner",
+        "type": "ObjectId",
+        "required": false,
+        "unique": false,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      }
+    ]
+  },
+  {
+    "schemaType": "Collection",
+    "name": "users",
+    "defaultValue": "",
+    "description": "",
+    "fields": [
+      {
+        "schemaType": "Field",
+        "name": "_id",
+        "type": "ObjectId",
+        "required": true,
+        "unique": true,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "id",
+        "type": "Integer",
+        "required": true,
+        "unique": true,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "name",
+        "type": "String",
+        "required": true,
+        "unique": false,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "email",
+        "type": "String",
+        "required": true,
+        "unique": true,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "courses",
+        "type": "Array",
+        "required": false,
+        "unique": false,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "documents",
+        "type": "Array",
+        "required": false,
+        "unique": false,
+        "defaultValue": "",
+        "description": "",
+        "index": 0,
+        "customProps": []
+      },
+      {
+        "schemaType": "Field",
+        "name": "type",
+        "type": "String",
+        "required": true,
+        "unique": false,
+        "defaultValue": "",
+        "description": "teacher or student",
+        "index": 0,
+        "customProps": []
+      }
+    ]
+  }
+]

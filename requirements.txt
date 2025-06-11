@@ -1,0 +1,8 @@
+uvicorn
+pymongo==4.6.1
+fastapi
+bson
+datetime
+pydantic
+python-dotenv==1.0.0
+pydantic[email]
