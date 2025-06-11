@@ -9,20 +9,35 @@ class UserController:
 
     def get_all_users(self) -> List[dict]:
         """Get all users from the database"""
-        return list(self.collection.find())
+        users = list(self.collection.find())
+        # Convert ObjectId to string for _id field
+        for user in users:
+            if '_id' in user:
+                user['_id'] = str(user['_id'])
+        return users
 
     def get_user_by_id(self, user_id: int) -> Optional[dict]:
         """Get a user by their ID"""
-        return self.collection.find_one({"id": user_id})
+        user = self.collection.find_one({"id": user_id})
+        if user and '_id' in user:
+            user['_id'] = str(user['_id'])
+        return user
 
     def get_users_by_type(self, user_type: str) -> List[dict]:
         """Get all users of a specific type (teacher/student)"""
-        return list(self.collection.find({"type": user_type}))
+        users = list(self.collection.find({"type": user_type}))
+        for user in users:
+            if '_id' in user:
+                user['_id'] = str(user['_id'])
+        return users
 
     def get_user_by_email(self, email: str) -> Optional[dict]:
         """Get a user by their email (case-insensitive)"""
         # Convert email to lowercase for case-insensitive comparison
-        return self.collection.find_one({"email": {"$regex": f"^{email}$", "$options": "i"}})
+        user = self.collection.find_one({"email": {"$regex": f"^{email}$", "$options": "i"}})
+        if user and '_id' in user:
+            user['_id'] = str(user['_id'])
+        return user
 
     def get_next_id(self) -> int:
         """Get the next available user ID"""
@@ -45,4 +60,6 @@ class UserController:
         
         # Get the created user
         created_user = self.collection.find_one({"_id": result.inserted_id})
+        if created_user and '_id' in created_user:
+            created_user['_id'] = str(created_user['_id'])
         return created_user 

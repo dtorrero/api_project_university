@@ -171,7 +171,7 @@
         "required": false,
         "unique": false,
         "defaultValue": "",
-        "description": "TFM, Exam, certificado de notas, lecciones, etc...",
+        "description": "",
         "index": 0,
         "customProps": []
       },

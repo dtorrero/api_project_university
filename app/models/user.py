@@ -1,23 +1,8 @@
-from pydantic import BaseModel, EmailStr, Field, validator
-from typing import List, Optional, Any, Annotated
+from pydantic import BaseModel, EmailStr, Field, validator, ConfigDict
+from typing import List, Optional, Annotated
 from datetime import datetime
 import re
 from bson import ObjectId
-
-class PyObjectId(str):
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v):
-        if not ObjectId.is_valid(str(v)):
-            raise ValueError("Invalid ObjectId")
-        return ObjectId(str(v))
-
-    @classmethod
-    def __get_pydantic_json_schema__(cls, _schema_generator: Any) -> dict[str, Any]:
-        return {"type": "string"}
 
 class UserBase(BaseModel):
     name: str = Field(..., min_length=2, max_length=100, description="User's full name")
@@ -34,8 +19,8 @@ class UserBase(BaseModel):
 
     @validator('name')
     def validate_name(cls, v):
-        if not re.match(r'^[a-zA-Z\s\-\.]+$', v):
-            raise ValueError('Name can only contain letters, spaces, hyphens, and periods')
+        if not re.match(r'^[a-zA-Z0-9\s\-\.]+$', v):
+            raise ValueError('Name can only contain letters, numbers, spaces, hyphens, and periods')
         return v.title()
 
 class UserCreate(UserBase):
@@ -43,15 +28,15 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     id: int = Field(..., description="User's unique identifier")
-    mongo_id: Optional[PyObjectId] = Field(None, alias="_id", description="MongoDB document ID")
+    mongo_id: Optional[str] = Field(None, alias="_id", description="MongoDB document ID")
 
-    class Config:
-        from_attributes = True
-        populate_by_name = True
-        json_encoders = {
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        json_encoders={
             ObjectId: str
-        }
-        json_schema_extra = {
+        },
+        json_schema_extra={
             "example": {
                 "id": 1,
                 "name": "John Doe",
@@ -60,4 +45,5 @@ class User(UserBase):
                 "courses": [1, 2],
                 "documents": [1, 2]
             }
-        } 
+        }
+    ) 

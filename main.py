@@ -1,26 +1,26 @@
 from fastapi import FastAPI
+from app.routes import user_routes, document_routes, subject_routes, course_routes
 from app.connection.connection import MongoDBConnection
-from app.routes import user_routes
 
 # Create FastAPI app
 app = FastAPI(
-    title="University API",
-    description="API for managing university courses, subjects, and documents",
+    title="API Documentation",
+    description="API for managing users, documents, subjects and courses",
     version="1.0.0"
 )
 
-# Initialize database connection
-db_connection = MongoDBConnection()
-
-# Include routers
-app.include_router(user_routes.router)
+# Include routers with prefixes
+app.include_router(user_routes.router, prefix="/users", tags=["users"])
+app.include_router(document_routes.router, prefix="/documents", tags=["documents"])
+app.include_router(subject_routes.router, prefix="/subjects", tags=["subjects"])
+app.include_router(course_routes.router, prefix="/courses", tags=["courses"])
 
 @app.on_event("startup")
 async def startup_db_client():
     """Initialize database connection on startup"""
     try:
         # Test database connection
-        db = db_connection.get_database()
+        db = MongoDBConnection().get_database()
         # You can add any additional startup database operations here
         print("Database connection established successfully!")
     except Exception as e:
@@ -30,7 +30,7 @@ async def startup_db_client():
 @app.on_event("shutdown")
 async def shutdown_db_client():
     """Close database connection on shutdown"""
-    db_connection.close()
+    MongoDBConnection().close()
     print("Database connection closed.")
 
 @app.get("/")

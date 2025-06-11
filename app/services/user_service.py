@@ -9,17 +9,17 @@ class UserService:
     def get_all_users(self) -> List[User]:
         """Get all users"""
         users = self.controller.get_all_users()
-        return [User(**user) for user in users]
+        return [User(**{**user, "_id": user.get("_id")}) for user in users]
 
     def get_user_by_id(self, user_id: int) -> Optional[User]:
         """Get a user by ID"""
         user = self.controller.get_user_by_id(user_id)
-        return User(**user) if user else None
+        return User(**{**user, "_id": user.get("_id")}) if user else None
 
     def get_users_by_type(self, user_type: str) -> List[User]:
         """Get all users of a specific type"""
         users = self.controller.get_users_by_type(user_type)
-        return [User(**user) for user in users]
+        return [User(**{**user, "_id": user.get("_id")}) for user in users]
 
     def create_user(self, user_data: UserCreate) -> User:
         """Create a new user"""
@@ -31,7 +31,7 @@ class UserService:
             created_user = self.controller.create_user(user_dict)
             
             # Convert to User model and return
-            return User(**created_user)
+            return User(**{**created_user, "_id": created_user.get("_id")})
         except ValueError as e:
             print(f"Validation error while creating user: {str(e)}")
             raise ValueError(str(e))

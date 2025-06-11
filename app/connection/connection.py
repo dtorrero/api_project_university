@@ -26,6 +26,7 @@ class MongoDBConnection:
             mongodb_uri = os.getenv('MONGODB_URI')
             if not mongodb_uri:
                 raise ValueError("MONGODB_URI environment variable is not set")
+            print(f"Connecting to MongoDB at: {mongodb_uri}")
 
             # Create MongoDB client
             self._client = MongoClient(mongodb_uri)
@@ -34,6 +35,7 @@ class MongoDBConnection:
             db_name = os.getenv('MONGODB_DB_NAME')
             if not db_name:
                 raise ValueError("MONGODB_DB_NAME environment variable is not set")
+            print(f"Using database: {db_name}")
             
             # Get database instance
             self._db = self._client[db_name]
@@ -49,13 +51,16 @@ class MongoDBConnection:
     def get_database(self):
         """Get database instance"""
         if self._db is None:
+            print("Database not initialized, connecting...")
             self.connect()
         return self._db
 
     def get_collection(self, collection_name):
         """Get collection instance"""
         if self._db is None:
+            print("Database not initialized, connecting...")
             self.connect()
+        print(f"Accessing collection: {collection_name}")
         return self._db[collection_name]
 
     def close(self):
@@ -63,4 +68,5 @@ class MongoDBConnection:
         if self._client:
             self._client.close()
             self._client = None
-            self._db = None 
+            self._db = None
+            print("MongoDB connection closed.") 
