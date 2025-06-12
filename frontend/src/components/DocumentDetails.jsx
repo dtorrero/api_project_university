@@ -80,21 +80,21 @@ function DocumentDetails({ document, onClose }) {
             <div>
               <h4 className="text-sm font-medium text-gray-500">Teacher</h4>
               <p className="mt-1 text-gray-900">
-                {teacher ? teacher.name : 'Loading...'}
+                {teacher ? teacher.name : 'No Teacher'}
               </p>
             </div>
 
             <div>
               <h4 className="text-sm font-medium text-gray-500">Subject</h4>
               <p className="mt-1 text-gray-900">
-                {subject ? subject.name : 'Loading...'}
+                {subject ? subject.name : 'No Subject'}
               </p>
             </div>
 
             <div>
               <h4 className="text-sm font-medium text-gray-500">Owner</h4>
               <p className="mt-1 text-gray-900">
-                {owner ? owner.name : 'Loading...'}
+                {owner ? owner.name : 'No Owner'}
               </p>
             </div>
           </div>

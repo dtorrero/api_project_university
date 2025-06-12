@@ -145,16 +145,19 @@ function Documents() {
   };
 
   const getTeacherName = (teacherId) => {
+    if (!teacherId) return 'No Teacher';
     const teacher = teachers.find(t => t.id === teacherId);
     return teacher ? teacher.name : 'Unknown Teacher';
   };
 
   const getSubjectName = (subjectId) => {
+    if (!subjectId) return 'No Subject';
     const subject = subjects.find(s => s.id === subjectId);
     return subject ? subject.name : 'Unknown Subject';
   };
 
   const getOwnerName = (ownerId) => {
+    if (!ownerId) return 'No Owner';
     const owner = users.find(u => u.id === ownerId);
     return owner ? owner.name : 'Unknown Owner';
   };
@@ -320,7 +323,7 @@ function Documents() {
                   <option value="">Select a teacher</option>
                   {teachers.map((teacher) => (
                     <option key={teacher.id} value={teacher.id}>
-                      {teacher.name} {teacher.lastname}
+                      {teacher.name}
                     </option>
                   ))}
                 </select>
@@ -352,7 +355,7 @@ function Documents() {
                   <option value="">Select an owner</option>
                   {users.map((user) => (
                     <option key={user.id} value={user.id}>
-                      {user.name} {user.lastname}
+                      {user.name}
                     </option>
                   ))}
                 </select>
