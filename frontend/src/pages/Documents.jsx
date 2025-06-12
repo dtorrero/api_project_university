@@ -1,18 +1,23 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../config/api';
 import Table from '../components/Table';
+import DocumentDetails from '../components/DocumentDetails';
 
 function Documents() {
   const [documents, setDocuments] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [teachers, setTeachers] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [users, setUsers] = useState([]);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
+    title: '',
     file_url: '',
-    type: 'pdf',
+    type: 'Lecture Notes',
+    grade: null,
     teacher_id: null,
     subject_id: null,
     owner: null
@@ -20,8 +25,7 @@ function Documents() {
 
   const columns = [
     { key: 'id', label: 'ID' },
-    { key: 'name', label: 'Name' },
-    { key: 'description', label: 'Description' },
+    { key: 'title', label: 'Title' },
     { key: 'type', label: 'Type' },
     { key: 'teacher_id', label: 'Teacher ID' },
     { key: 'subject_id', label: 'Subject ID' },
@@ -30,6 +34,9 @@ function Documents() {
 
   useEffect(() => {
     fetchDocuments();
+    fetchTeachers();
+    fetchSubjects();
+    fetchUsers();
   }, []);
 
   const fetchDocuments = async () => {
@@ -46,13 +53,47 @@ function Documents() {
     }
   };
 
+  const fetchTeachers = async () => {
+    try {
+      const response = await api.get('/users');
+      // Filter users to get only teachers
+      const teacherUsers = response.data.filter(user => user.type === 'teacher');
+      setTeachers(teacherUsers);
+    } catch (error) {
+      console.error('Error fetching teachers:', error);
+    }
+  };
+
+  const fetchSubjects = async () => {
+    try {
+      const response = await api.get('/subjects');
+      setSubjects(response.data);
+    } catch (error) {
+      console.error('Error fetching subjects:', error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await api.get('/users');
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  const handleViewDetails = (document) => {
+    setSelectedDocument(document);
+    setIsDetailsOpen(true);
+  };
+
   const handleEdit = (document) => {
     setSelectedDocument(document);
     setFormData({
-      name: document.name,
-      description: document.description,
+      title: document.title,
       file_url: document.file_url,
       type: document.type,
+      grade: document.grade,
       teacher_id: document.teacher_id,
       subject_id: document.subject_id,
       owner: document.owner
@@ -75,18 +116,23 @@ function Documents() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const submitData = {
+        ...formData,
+        owner: formData.owner // Keep as integer since backend expects int32
+      };
+
       if (selectedDocument) {
-        await api.put(`/documents/${selectedDocument.id}`, formData);
+        await api.put(`/documents/${selectedDocument.id}`, submitData);
       } else {
-        await api.post('/documents', formData);
+        await api.post('/documents', submitData);
       }
       setIsModalOpen(false);
       setSelectedDocument(null);
       setFormData({
-        name: '',
-        description: '',
+        title: '',
         file_url: '',
-        type: 'pdf',
+        type: 'Lecture Notes',
+        grade: null,
         teacher_id: null,
         subject_id: null,
         owner: null
@@ -96,6 +142,21 @@ function Documents() {
       console.error('Error saving document:', error);
       alert('Failed to save document. Please try again.');
     }
+  };
+
+  const getTeacherName = (teacherId) => {
+    const teacher = teachers.find(t => t.id === teacherId);
+    return teacher ? teacher.name : 'Unknown Teacher';
+  };
+
+  const getSubjectName = (subjectId) => {
+    const subject = subjects.find(s => s.id === subjectId);
+    return subject ? subject.name : 'Unknown Subject';
+  };
+
+  const getOwnerName = (ownerId) => {
+    const owner = users.find(u => u.id === ownerId);
+    return owner ? owner.name : 'Unknown Owner';
   };
 
   if (loading) {
@@ -122,10 +183,10 @@ function Documents() {
           onClick={() => {
             setSelectedDocument(null);
             setFormData({
-              name: '',
-              description: '',
+              title: '',
               file_url: '',
-              type: 'pdf',
+              type: 'Lecture Notes',
+              grade: null,
               teacher_id: null,
               subject_id: null,
               owner: null
@@ -138,12 +199,59 @@ function Documents() {
         </button>
       </div>
 
-      <Table
-        columns={columns}
-        data={documents}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teacher</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {documents.map((document) => (
+              <tr key={document.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <button
+                    onClick={() => {
+                      setSelectedDocument(document);
+                      setIsDetailsOpen(true);
+                    }}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    {document.title}
+                  </button>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">{document.type}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{getTeacherName(document.teacher_id)}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{getSubjectName(document.subject_id)}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{getOwnerName(document.owner)}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{document.grade || 'N/A'}</td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleEdit(document)}
+                      className="text-indigo-600 hover:text-indigo-900"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(document)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -153,25 +261,15 @@ function Documents() {
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Name</label>
+                <label className="block text-sm font-medium text-gray-700">Title</label>
                 <input
                   type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   required
                   minLength={1}
-                  maxLength={100}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Description</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  rows="3"
-                  required
+                  maxLength={200}
                 />
               </div>
               <div>
@@ -192,41 +290,72 @@ function Documents() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   required
                 >
-                  <option value="pdf">PDF</option>
-                  <option value="doc">DOC</option>
-                  <option value="docx">DOCX</option>
-                  <option value="txt">TXT</option>
+                  <option value="Lecture Notes">Lecture Notes</option>
+                  <option value="Assignment">Assignment</option>
+                  <option value="Exam">Exam</option>
+                  <option value="Project">Project</option>
+                  <option value="Study Guide">Study Guide</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Teacher ID</label>
+                <label className="block text-sm font-medium text-gray-700">Grade</label>
                 <input
                   type="number"
+                  value={formData.grade || ''}
+                  onChange={(e) => setFormData({ ...formData, grade: e.target.value ? parseFloat(e.target.value) : null })}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Teacher</label>
+                <select
                   value={formData.teacher_id || ''}
                   onChange={(e) => setFormData({ ...formData, teacher_id: e.target.value ? parseInt(e.target.value) : null })}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   required
-                />
+                >
+                  <option value="">Select a teacher</option>
+                  {teachers.map((teacher) => (
+                    <option key={teacher.id} value={teacher.id}>
+                      {teacher.name} {teacher.lastname}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Subject ID</label>
-                <input
-                  type="number"
+                <label className="block text-sm font-medium text-gray-700">Subject</label>
+                <select
                   value={formData.subject_id || ''}
                   onChange={(e) => setFormData({ ...formData, subject_id: e.target.value ? parseInt(e.target.value) : null })}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   required
-                />
+                >
+                  <option value="">Select a subject</option>
+                  {subjects.map((subject) => (
+                    <option key={subject.id} value={subject.id}>
+                      {subject.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Owner</label>
-                <input
-                  type="number"
+                <select
                   value={formData.owner || ''}
                   onChange={(e) => setFormData({ ...formData, owner: e.target.value ? parseInt(e.target.value) : null })}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   required
-                />
+                >
+                  <option value="">Select an owner</option>
+                  {users.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.name} {user.lastname}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="flex justify-end space-x-4">
                 <button
@@ -246,6 +375,16 @@ function Documents() {
             </form>
           </div>
         </div>
+      )}
+
+      {isDetailsOpen && (
+        <DocumentDetails
+          document={selectedDocument}
+          onClose={() => {
+            setIsDetailsOpen(false);
+            setSelectedDocument(null);
+          }}
+        />
       )}
     </div>
   );

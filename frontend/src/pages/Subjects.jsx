@@ -12,13 +12,22 @@ function Subjects() {
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
-    description: ''
+    description: '',
+    teacher_id: null
   });
 
   const columns = [
     { key: 'id', label: 'ID' },
     { key: 'name', label: 'Name' },
-    { key: 'description', label: 'Description' }
+    { key: 'description', label: 'Description' },
+    { 
+      key: 'teacher_id', 
+      label: 'Teacher',
+      render: (teacherId) => {
+        const teacher = teachers.find(t => t.id === teacherId);
+        return teacher ? teacher.name : 'Not assigned';
+      }
+    }
   ];
 
   useEffect(() => {
@@ -59,7 +68,8 @@ function Subjects() {
     setSelectedSubject(subject);
     setFormData({
       name: subject.name,
-      description: subject.description
+      description: subject.description,
+      teacher_id: subject.teacher_id
     });
     setIsModalOpen(true);
   };
@@ -79,19 +89,28 @@ function Subjects() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const submitData = {
+        ...formData,
+        teacher_id: formData.teacher_id ? parseInt(formData.teacher_id) : null
+      };
+
       if (selectedSubject) {
-        await api.put(`/subjects/${selectedSubject.id}`, formData);
+        await api.put(`/subjects/${selectedSubject.id}`, submitData);
       } else {
-        await api.post('/subjects', formData);
+        await api.post('/subjects', submitData);
       }
       setIsModalOpen(false);
       setSelectedSubject(null);
-      setFormData({ name: '', description: '' });
+      setFormData({ name: '', description: '', teacher_id: null });
       fetchSubjects();
     } catch (error) {
       console.error('Error saving subject:', error);
       alert('Failed to save subject. Please try again.');
     }
+  };
+
+  const getTeacherById = (teacherId) => {
+    return teachers.find(teacher => teacher.id === teacherId);
   };
 
   if (loading) {
@@ -117,7 +136,7 @@ function Subjects() {
         <button
           onClick={() => {
             setSelectedSubject(null);
-            setFormData({ name: '', description: '' });
+            setFormData({ name: '', description: '', teacher_id: null });
             setIsModalOpen(true);
           }}
           className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
@@ -164,6 +183,21 @@ function Subjects() {
                   required
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Teacher</label>
+                <select
+                  value={formData.teacher_id || ''}
+                  onChange={(e) => setFormData({ ...formData, teacher_id: e.target.value ? parseInt(e.target.value) : null })}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                >
+                  <option value="">Select a teacher</option>
+                  {teachers.map((teacher) => (
+                    <option key={teacher.id} value={teacher.id}>
+                      {teacher.name} ({teacher.email})
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="flex justify-end space-x-4">
                 <button
                   type="button"
@@ -209,6 +243,27 @@ function Subjects() {
               <div>
                 <h4 className="text-lg font-medium text-gray-900 mb-2">Description</h4>
                 <p className="text-gray-600">{selectedSubject.description}</p>
+              </div>
+
+              <div>
+                <h4 className="text-lg font-medium text-gray-900 mb-2">Assigned Teacher</h4>
+                {selectedSubject.teacher_id ? (
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    {(() => {
+                      const teacher = getTeacherById(selectedSubject.teacher_id);
+                      return teacher ? (
+                        <>
+                          <h5 className="font-medium text-gray-900">{teacher.name}</h5>
+                          <p className="text-sm text-gray-600 mt-1">{teacher.email}</p>
+                        </>
+                      ) : (
+                        <p className="text-gray-600">Teacher not found</p>
+                      );
+                    })()}
+                  </div>
+                ) : (
+                  <p className="text-gray-600">No teacher assigned</p>
+                )}
               </div>
             </div>
 
