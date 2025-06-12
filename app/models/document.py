@@ -22,6 +22,23 @@ class DocumentBase(BaseModel):
 class DocumentCreate(DocumentBase):
     pass
 
+class DocumentUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=200, description="Document title")
+    file_url: Optional[str] = Field(None, description="URL or path to the document file")
+    type: Optional[str] = Field(None, description="Document type (Lecture Notes, Assignment, Exam, Project, Study Guide)")
+    grade: Optional[float] = Field(None, ge=0, le=100, description="Grade for the document (0-100)")
+    teacher_id: Optional[int] = Field(None, description="ID of the teacher who created the document")
+    subject_id: Optional[int] = Field(None, description="ID of the subject the document belongs to")
+    owner: Optional[str] = Field(None, description="ID of the user who owns the document (MongoDB ObjectId)")
+
+    @validator('type')
+    def validate_type(cls, v):
+        if v is not None:
+            valid_types = ['Lecture Notes', 'Assignment', 'Exam', 'Project', 'Study Guide']
+            if v not in valid_types:
+                raise ValueError(f'Type must be one of: {", ".join(valid_types)}')
+        return v
+
 class Document(DocumentBase):
     id: int = Field(..., description="Document's unique identifier")
     upload_date: datetime = Field(default_factory=datetime.utcnow, description="Document upload date")

@@ -1,5 +1,5 @@
 from app.controller.user_controller import UserController
-from app.models.user import User, UserCreate
+from app.models.user import User, UserCreate, UserUpdate
 from typing import List, Optional
 
 class UserService:
@@ -37,4 +37,37 @@ class UserService:
             raise ValueError(str(e))
         except Exception as e:
             print(f"Unexpected error while creating user: {str(e)}")
-            raise Exception(f"Error creating user: {str(e)}") 
+            raise Exception(f"Error creating user: {str(e)}")
+
+    def update_user(self, user_id: int, user_data: UserUpdate) -> Optional[User]:
+        """Update a user"""
+        try:
+            # Convert Pydantic model to dict, excluding None values
+            update_dict = {k: v for k, v in user_data.model_dump().items() if v is not None}
+            
+            if not update_dict:
+                raise ValueError("No valid fields to update")
+
+            # Update user in controller
+            updated_user = self.controller.update_user(user_id, update_dict)
+            
+            if not updated_user:
+                return None
+
+            # Convert to User model and return
+            return User(**{**updated_user, "_id": updated_user.get("_id")})
+        except ValueError as e:
+            print(f"Validation error while updating user: {str(e)}")
+            raise ValueError(str(e))
+        except Exception as e:
+            print(f"Unexpected error while updating user: {str(e)}")
+            raise Exception(f"Error updating user: {str(e)}")
+
+    def delete_user(self, user_id: int) -> bool:
+        """Delete a user"""
+        try:
+            return self.controller.delete_user(user_id)
+        except ValueError as e:
+            raise ValueError(str(e))
+        except Exception as e:
+            raise ValueError(f"Failed to delete user: {str(e)}") 

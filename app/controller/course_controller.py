@@ -40,4 +40,72 @@ class CourseController:
         for course in courses:
             if '_id' in course:
                 course['_id'] = str(course['_id'])
-        return courses 
+        return courses
+
+    def create_course(self, course_data: Dict) -> Dict:
+        """Create a new course in the database"""
+        try:
+            # Get the next available ID
+            last_course = self.collection.find_one(sort=[("id", -1)])
+            next_id = 1 if not last_course else last_course["id"] + 1
+
+            # Prepare course data
+            course = {
+                "id": next_id,
+                "name": course_data["name"],
+                "subjects": course_data["subjects"]
+            }
+
+            # Insert course into database
+            result = self.collection.insert_one(course)
+            
+            # Get the created course
+            created_course = self.collection.find_one({"_id": result.inserted_id})
+            
+            # Convert ObjectId to string for response
+            if created_course and '_id' in created_course:
+                created_course["_id"] = str(created_course["_id"])
+            
+            return created_course
+        except Exception as e:
+            print(f"Error creating course: {str(e)}")
+            raise ValueError(f"Failed to create course: {str(e)}")
+
+    def update_course(self, course_id: int, course_data: Dict) -> Optional[Dict]:
+        """Update a course by ID"""
+        try:
+            # Check if course exists
+            existing_course = self.get_course_by_id(course_id)
+            if not existing_course:
+                return None
+
+            # Update course in database
+            update_result = self.collection.update_one(
+                {"id": course_id},
+                {"$set": course_data}
+            )
+
+            if update_result.modified_count == 0:
+                return None
+
+            # Get updated course
+            updated_course = self.get_course_by_id(course_id)
+            return updated_course
+        except Exception as e:
+            print(f"Error updating course: {str(e)}")
+            raise ValueError(f"Failed to update course: {str(e)}")
+
+    def delete_course(self, course_id: int) -> bool:
+        """Delete a course by ID"""
+        try:
+            # Check if course exists
+            existing_course = self.get_course_by_id(course_id)
+            if not existing_course:
+                return False
+
+            # Delete course from database
+            result = self.collection.delete_one({"id": course_id})
+            return result.deleted_count > 0
+        except Exception as e:
+            print(f"Error deleting course: {str(e)}")
+            raise ValueError(f"Failed to delete course: {str(e)}") 

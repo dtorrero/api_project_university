@@ -1,6 +1,7 @@
 from app.connection.connection import MongoDBConnection
 from typing import List, Optional, Dict
 from bson import ObjectId
+from datetime import datetime
 
 class DocumentController:
     def __init__(self):
@@ -81,4 +82,84 @@ class DocumentController:
             return documents
         except Exception as e:
             print(f"Error searching for documents by owner: {str(e)}")
-            return [] 
+            return []
+
+    def create_document(self, document_data: Dict) -> Dict:
+        """Create a new document in the database"""
+        try:
+            # Get the next available ID
+            last_document = self.collection.find_one(sort=[("id", -1)])
+            next_id = 1 if not last_document else last_document["id"] + 1
+
+            # Prepare document data
+            document = {
+                "id": next_id,
+                "title": document_data["title"],
+                "file_url": document_data["file_url"],
+                "type": document_data["type"],
+                "grade": document_data.get("grade"),
+                "teacher_id": document_data["teacher_id"],
+                "subject_id": document_data["subject_id"],
+                "owner": ObjectId(document_data["owner"]),
+                "upload_date": datetime.utcnow()
+            }
+
+            # Insert document into database
+            result = self.collection.insert_one(document)
+            
+            # Get the created document
+            created_document = self.collection.find_one({"_id": result.inserted_id})
+            
+            # Convert ObjectId to string for response
+            if created_document:
+                created_document["_id"] = str(created_document["_id"])
+                if "owner" in created_document and isinstance(created_document["owner"], ObjectId):
+                    created_document["owner"] = str(created_document["owner"])
+            
+            return created_document
+        except Exception as e:
+            print(f"Error creating document: {str(e)}")
+            raise ValueError(f"Failed to create document: {str(e)}")
+
+    def update_document(self, document_id: int, document_data: Dict) -> Optional[Dict]:
+        """Update a document by ID"""
+        try:
+            # Check if document exists
+            existing_document = self.get_document_by_id(document_id)
+            if not existing_document:
+                return None
+
+            # Convert owner string to ObjectId if it's being updated
+            if "owner" in document_data:
+                document_data["owner"] = ObjectId(document_data["owner"])
+
+            # Update document in database
+            update_result = self.collection.update_one(
+                {"id": document_id},
+                {"$set": document_data}
+            )
+
+            if update_result.modified_count == 0:
+                return None
+
+            # Get updated document
+            updated_document = self.get_document_by_id(document_id)
+            return updated_document
+        except Exception as e:
+            print(f"Error updating document: {str(e)}")
+            raise ValueError(f"Failed to update document: {str(e)}")
+
+    def delete_document(self, document_id: int) -> bool:
+        """Delete a document by ID"""
+        try:
+            # Check if document exists
+            existing_document = self.get_document_by_id(document_id)
+            if not existing_document:
+                return False
+
+            # Delete document from database
+            result = self.collection.delete_one({"id": document_id})
+            return result.deleted_count > 0
+        except Exception as e:
+            print(f"Error deleting document: {str(e)}")
+            raise ValueError(f"Failed to delete document: {str(e)}") 

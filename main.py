@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.routes import user_routes, document_routes, subject_routes, course_routes
 from app.connection.connection import MongoDBConnection
 
@@ -7,6 +8,15 @@ app = FastAPI(
     title="API Documentation",
     description="API for managing users, documents, subjects and courses",
     version="1.0.0"
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Include routers with prefixes

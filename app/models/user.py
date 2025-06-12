@@ -7,24 +7,31 @@ from bson import ObjectId
 class UserBase(BaseModel):
     name: str = Field(..., min_length=2, max_length=100, description="User's full name")
     email: EmailStr = Field(..., description="User's email address")
-    type: str = Field(..., description="User type: 'teacher' or 'student'")
-    courses: List[int] = Field(default_factory=list, description="List of course IDs")
-    documents: List[int] = Field(default_factory=list, description="List of document IDs")
+    type: str = Field(..., description="User type (teacher/student)")
+    courses: Optional[List[int]] = Field(default=[], description="List of course IDs")
+    documents: Optional[List[int]] = Field(default=[], description="List of document IDs")
 
     @validator('type')
-    def validate_type(cls, v):
+    def type_must_be_valid(cls, v):
         if v not in ['teacher', 'student']:
             raise ValueError('Type must be either "teacher" or "student"')
         return v
 
-    @validator('name')
-    def validate_name(cls, v):
-        if not re.match(r'^[a-zA-Z0-9\s\-\.]+$', v):
-            raise ValueError('Name can only contain letters, numbers, spaces, hyphens, and periods')
-        return v.title()
-
 class UserCreate(UserBase):
     pass
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=2, max_length=100, description="User's full name")
+    email: Optional[EmailStr] = Field(None, description="User's email address")
+    type: Optional[str] = Field(None, description="User type (teacher/student)")
+    courses: Optional[List[int]] = Field(None, description="List of course IDs")
+    documents: Optional[List[int]] = Field(None, description="List of document IDs")
+
+    @validator('type')
+    def type_must_be_valid(cls, v):
+        if v is not None and v not in ['teacher', 'student']:
+            raise ValueError('Type must be either "teacher" or "student"')
+        return v
 
 class User(UserBase):
     id: int = Field(..., description="User's unique identifier")
@@ -40,9 +47,9 @@ class User(UserBase):
             "example": {
                 "id": 1,
                 "name": "John Doe",
-                "email": "john.doe@university.edu",
-                "type": "student",
-                "courses": [1, 2],
+                "email": "john@example.com",
+                "type": "teacher",
+                "courses": [1, 2, 3],
                 "documents": [1, 2]
             }
         }

@@ -9,6 +9,10 @@ class SubjectBase(BaseModel):
 class SubjectCreate(SubjectBase):
     pass
 
+class SubjectUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=100, description="Subject name")
+    description: Optional[str] = Field(None, min_length=1, max_length=500, description="Subject description")
+
 class Subject(SubjectBase):
     id: int = Field(..., description="Subject's unique identifier")
     mongo_id: Optional[str] = Field(None, alias="_id", description="MongoDB document ID")

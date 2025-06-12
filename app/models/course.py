@@ -9,6 +9,10 @@ class CourseBase(BaseModel):
 class CourseCreate(CourseBase):
     pass
 
+class CourseUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=100, description="Course name")
+    subjects: Optional[List[int]] = Field(None, description="List of subject IDs")
+
 class Course(CourseBase):
     id: int = Field(..., description="Course's unique identifier")
     mongo_id: Optional[str] = Field(None, alias="_id", description="MongoDB document ID")

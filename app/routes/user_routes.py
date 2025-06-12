@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 from app.services.user_service import UserService
-from app.models.user import User, UserCreate
+from app.models.user import User, UserCreate, UserUpdate
 from typing import List
+from pydantic import BaseModel
 
 router = APIRouter(
     tags=["users"],
@@ -13,6 +14,9 @@ router = APIRouter(
 )
 
 user_service = UserService()
+
+class DeleteResponse(BaseModel):
+    message: str
 
 @router.get("/", response_model=List[User])
 async def get_users():
@@ -53,6 +57,63 @@ async def create_user(user: UserCreate):
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Email already registered"
             )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+@router.put("/{user_id}", response_model=User)
+async def update_user(user_id: int, user: UserUpdate):
+    """
+    Update a user with the following information:
+    
+    - **name**: User's full name (2-100 characters, letters only)
+    - **email**: Valid email address
+    - **type**: Either 'teacher' or 'student'
+    - **courses**: Optional list of course IDs
+    - **documents**: Optional list of document IDs
+    """
+    try:
+        updated_user = user_service.update_user(user_id, user)
+        if not updated_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User with ID {user_id} not found"
+            )
+        return updated_user
+    except ValueError as e:
+        if "Email already registered" in str(e):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Email already registered"
+            )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+@router.delete("/{user_id}", response_model=DeleteResponse, tags=["users"])
+async def delete_user(user_id: int):
+    """Delete a user by ID"""
+    try:
+        deleted = user_service.delete_user(user_id)
+        if not deleted:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User with ID {user_id} not found"
+            )
+        return DeleteResponse(message=f"User with ID {user_id} has been successfully deleted")
+    except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
