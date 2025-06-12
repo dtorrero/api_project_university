@@ -9,18 +9,23 @@ function Documents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
-    title: '',
-    content: '',
-    subject_id: '',
-    user_id: ''
+    name: '',
+    description: '',
+    file_url: '',
+    type: 'pdf',
+    teacher_id: null,
+    subject_id: null,
+    owner: null
   });
 
   const columns = [
     { key: 'id', label: 'ID' },
-    { key: 'title', label: 'Title' },
-    { key: 'content', label: 'Content' },
+    { key: 'name', label: 'Name' },
+    { key: 'description', label: 'Description' },
+    { key: 'type', label: 'Type' },
+    { key: 'teacher_id', label: 'Teacher ID' },
     { key: 'subject_id', label: 'Subject ID' },
-    { key: 'user_id', label: 'User ID' }
+    { key: 'owner', label: 'Owner' }
   ];
 
   useEffect(() => {
@@ -44,10 +49,13 @@ function Documents() {
   const handleEdit = (document) => {
     setSelectedDocument(document);
     setFormData({
-      title: document.title,
-      content: document.content,
+      name: document.name,
+      description: document.description,
+      file_url: document.file_url,
+      type: document.type,
+      teacher_id: document.teacher_id,
       subject_id: document.subject_id,
-      user_id: document.user_id
+      owner: document.owner
     });
     setIsModalOpen(true);
   };
@@ -74,7 +82,15 @@ function Documents() {
       }
       setIsModalOpen(false);
       setSelectedDocument(null);
-      setFormData({ title: '', content: '', subject_id: '', user_id: '' });
+      setFormData({
+        name: '',
+        description: '',
+        file_url: '',
+        type: 'pdf',
+        teacher_id: null,
+        subject_id: null,
+        owner: null
+      });
       fetchDocuments();
     } catch (error) {
       console.error('Error saving document:', error);
@@ -105,7 +121,15 @@ function Documents() {
         <button
           onClick={() => {
             setSelectedDocument(null);
-            setFormData({ title: '', content: '', subject_id: '', user_id: '' });
+            setFormData({
+              name: '',
+              description: '',
+              file_url: '',
+              type: 'pdf',
+              teacher_id: null,
+              subject_id: null,
+              owner: null
+            });
             setIsModalOpen(true);
           }}
           className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
@@ -129,40 +153,77 @@ function Documents() {
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Title</label>
+                <label className="block text-sm font-medium text-gray-700">Name</label>
                 <input
                   type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  required
+                  minLength={1}
+                  maxLength={100}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Description</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  rows="3"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">File URL</label>
+                <input
+                  type="url"
+                  value={formData.file_url}
+                  onChange={(e) => setFormData({ ...formData, file_url: e.target.value })}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Content</label>
-                <textarea
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                <label className="block text-sm font-medium text-gray-700">Type</label>
+                <select
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  rows="3"
+                  required
+                >
+                  <option value="pdf">PDF</option>
+                  <option value="doc">DOC</option>
+                  <option value="docx">DOCX</option>
+                  <option value="txt">TXT</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Teacher ID</label>
+                <input
+                  type="number"
+                  value={formData.teacher_id || ''}
+                  onChange={(e) => setFormData({ ...formData, teacher_id: e.target.value ? parseInt(e.target.value) : null })}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Subject ID</label>
                 <input
                   type="number"
-                  value={formData.subject_id}
-                  onChange={(e) => setFormData({ ...formData, subject_id: e.target.value })}
+                  value={formData.subject_id || ''}
+                  onChange={(e) => setFormData({ ...formData, subject_id: e.target.value ? parseInt(e.target.value) : null })}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">User ID</label>
+                <label className="block text-sm font-medium text-gray-700">Owner</label>
                 <input
                   type="number"
-                  value={formData.user_id}
-                  onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
+                  value={formData.owner || ''}
+                  onChange={(e) => setFormData({ ...formData, owner: e.target.value ? parseInt(e.target.value) : null })}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   required
                 />

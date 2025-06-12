@@ -4,25 +4,26 @@ import Table from '../components/Table';
 
 function Subjects() {
   const [subjects, setSubjects] = useState([]);
+  const [teachers, setTeachers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
-    course_id: ''
+    description: ''
   });
 
   const columns = [
     { key: 'id', label: 'ID' },
     { key: 'name', label: 'Name' },
-    { key: 'description', label: 'Description' },
-    { key: 'course_id', label: 'Course ID' }
+    { key: 'description', label: 'Description' }
   ];
 
   useEffect(() => {
     fetchSubjects();
+    fetchTeachers();
   }, []);
 
   const fetchSubjects = async () => {
@@ -39,12 +40,26 @@ function Subjects() {
     }
   };
 
+  const fetchTeachers = async () => {
+    try {
+      const response = await api.get('/users');
+      const teacherUsers = response.data.filter(user => user.type === 'teacher');
+      setTeachers(teacherUsers);
+    } catch (error) {
+      console.error('Error fetching teachers:', error);
+    }
+  };
+
+  const handleViewSubject = (subject) => {
+    setSelectedSubject(subject);
+    setIsViewModalOpen(true);
+  };
+
   const handleEdit = (subject) => {
     setSelectedSubject(subject);
     setFormData({
       name: subject.name,
-      description: subject.description,
-      course_id: subject.course_id
+      description: subject.description
     });
     setIsModalOpen(true);
   };
@@ -71,7 +86,7 @@ function Subjects() {
       }
       setIsModalOpen(false);
       setSelectedSubject(null);
-      setFormData({ name: '', description: '', course_id: '' });
+      setFormData({ name: '', description: '' });
       fetchSubjects();
     } catch (error) {
       console.error('Error saving subject:', error);
@@ -102,7 +117,7 @@ function Subjects() {
         <button
           onClick={() => {
             setSelectedSubject(null);
-            setFormData({ name: '', description: '', course_id: '' });
+            setFormData({ name: '', description: '' });
             setIsModalOpen(true);
           }}
           className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
@@ -116,8 +131,10 @@ function Subjects() {
         data={subjects}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onRowClick={handleViewSubject}
       />
 
+      {/* Edit/Add Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
@@ -133,6 +150,8 @@ function Subjects() {
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   required
+                  minLength={1}
+                  maxLength={100}
                 />
               </div>
               <div>
@@ -142,15 +161,6 @@ function Subjects() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   rows="3"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Course ID</label>
-                <input
-                  type="number"
-                  value={formData.course_id}
-                  onChange={(e) => setFormData({ ...formData, course_id: e.target.value })}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   required
                 />
               </div>
@@ -170,6 +180,46 @@ function Subjects() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Modal */}
+      {isViewModalOpen && selectedSubject && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-xl font-semibold">Subject Details</h3>
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-lg font-medium text-gray-900 mb-2">{selectedSubject.name}</h4>
+                <p className="text-sm text-gray-500">Subject ID: {selectedSubject.id}</p>
+              </div>
+
+              <div>
+                <h4 className="text-lg font-medium text-gray-900 mb-2">Description</h4>
+                <p className="text-gray-600">{selectedSubject.description}</p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

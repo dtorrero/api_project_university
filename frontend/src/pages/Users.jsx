@@ -11,14 +11,16 @@ function Users() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    role: 'student'
+    type: 'student',
+    courses: [],
+    documents: []
   });
 
   const columns = [
     { key: 'id', label: 'ID' },
     { key: 'name', label: 'Name' },
     { key: 'email', label: 'Email' },
-    { key: 'role', label: 'Role' }
+    { key: 'type', label: 'Type' }
   ];
 
   useEffect(() => {
@@ -44,7 +46,9 @@ function Users() {
     setFormData({
       name: user.name,
       email: user.email,
-      role: user.role
+      type: user.type,
+      courses: user.courses || [],
+      documents: user.documents || []
     });
     setIsModalOpen(true);
   };
@@ -71,7 +75,7 @@ function Users() {
       }
       setIsModalOpen(false);
       setSelectedUser(null);
-      setFormData({ name: '', email: '', role: 'student' });
+      setFormData({ name: '', email: '', type: 'student', courses: [], documents: [] });
       fetchUsers();
     } catch (error) {
       console.error('Error saving user:', error);
@@ -102,7 +106,7 @@ function Users() {
         <button
           onClick={() => {
             setSelectedUser(null);
-            setFormData({ name: '', email: '', role: 'student' });
+            setFormData({ name: '', email: '', type: 'student', courses: [], documents: [] });
             setIsModalOpen(true);
           }}
           className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
@@ -133,6 +137,8 @@ function Users() {
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   required
+                  minLength={2}
+                  maxLength={100}
                 />
               </div>
               <div>
@@ -146,15 +152,14 @@ function Users() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Role</label>
+                <label className="block text-sm font-medium text-gray-700">Type</label>
                 <select
-                  value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 >
                   <option value="student">Student</option>
                   <option value="teacher">Teacher</option>
-                  <option value="admin">Admin</option>
                 </select>
               </div>
               <div className="flex justify-end space-x-4">
